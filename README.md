@@ -20,6 +20,12 @@ Detailed documentation is available in [HTML](https://rseichter.github.io/automx
 [PDF](https://github.com/rseichter/automx2/blob/master/docs/automx2.pdf) and
 [other formats](https://github.com/rseichter/automx2/blob/master/docs).
 
+## Container Environment Variables
+
+- `AUTOMX2_ENV`: production or development
+- `AUTOMX2_HOST`: 0.0.0.0
+- `AUTOMX2_PORT`: 4243
+
 ## Contributing
 
 To avoid copyright issues, I do not accept code contributions. Please don't
