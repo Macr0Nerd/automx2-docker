@@ -1,6 +1,15 @@
 {
   "provider": "Example Inc.",
-  "domains": ["example.com", "example.net", "example.org"],
+  "ldapservers": [
+    {"name":  "ldap.example.com", "port": 636,
+     "search_base": "ou=mailusers,dc=example,dc=com", "bind_password": "PASSWORD",
+     "bind_user": "cn=automx2,ou=services,dc=example,dc=com"}
+  ],
+  "domains": [
+    {"name": "example.com", "ldapserver":  "ldap.example.com"},
+    "example.net",
+    "example.org"
+  ],
   "servers": [
     {"type": "imap", "name": "imap.example.com"},
     {"type": "smtp", "name": "smtp.example.com"},

@@ -163,10 +163,52 @@ def populate_with_dict(config: dict) -> None:
     short_name = name.split(" ")[0]
     provider = Provider(id=Provider.query.count(), name=name, short_name=short_name)
     db.session.add(provider)
+
+    ldapservers = {}
+    ldap_id = Ldapserver.query.count()
+    for ldapserver in dictget_optional(config, "ldapservers", []):
+        ldap_name = dictget_mandatory(ldapserver, "name")
+        ldap_port = dictget_mandatory(ldapserver, "port")
+        ldap_ssl = True if ldap_port == 636 else False
+        ldap_uid = dictget_optional(ldapserver, "attr_uid", "uid")
+        ldap_cn = dictget_optional(ldapserver, "attr_cn", "cn")
+        ldap_bind_user = dictget_mandatory(ldapserver, "bind_user")
+        ldap_bind_password = dictget_mandatory(ldapserver, "bind_password")
+        ldap_search_base = dictget_mandatory(ldapserver, "search_base")
+        ldap_search_filter = dictget_optional(ldapserver, "search_filter", "(mail={0})")
+
+        ldapservers[ldap_name] = Ldapserver(
+            id=ldap_id,
+            name=ldap_name,
+            port=ldap_port,
+            use_ssl=ldap_ssl,
+            attr_uid=ldap_uid,
+            attr_cn=ldap_cn,
+            bind_user=ldap_bind_user,
+            bind_password=ldap_bind_password,
+            search_base=ldap_search_base,
+            search_filter=ldap_search_filter,
+        )
+
+        ldap_id += 1
+
+    if ldapservers:
+        db.session.add_all(list(ldapservers.values()))
+
     domains = []
     did = Domain.query.count()
     for domain in dictget_mandatory(config, "domains"):
-        domains.append(Domain(id=did, name=domain, provider=provider))
+        domain_ldap = None
+        if isinstance(domain, dict):
+            domain_name = dictget_mandatory(domain, "name")
+
+            domain_ldap = dictget_optional(domain, "ldapserver", None)
+            if domain_ldap:
+                domain_ldap = ldapservers[domain_ldap]
+        else:
+            domain_name = domain
+
+        domains.append(Domain(id=did, name=domain_name, provider=provider, ldapserver=domain_ldap))
         did += 1
     if len(domains) < 1:  # pragma: no cover
         log.error("No domains specified")
